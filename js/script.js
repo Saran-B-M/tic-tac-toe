@@ -13,14 +13,15 @@ let gameBoard = (function (){
     const getPlayer = () => player;
     let markTile = (tile) => {
         if(tiles[tile]===-1){
-            if(player === 1){
-                tiles[tile] = 1;
-            }
-            else {
-                tiles[tile] = 0;
-            }
             
-            player = 1-player;
+            tiles[tile] = 1;
+            let gameStatus = checkGameStatus();
+            if(gameStatus) return gameStatus;
+            gameStatus = aiMove(); 
+            if(gameStatus) return gameStatus;
+
+            
+            //player = 1-player;
             
         }
     }
@@ -73,6 +74,10 @@ let gameBoard = (function (){
         else if(tiles[6]===0 && tiles[4]===0 && tiles[2]===0){
             won = 0;
         }
+
+        if(won === 1) return 'X Won';
+        else if(won === 0) return 'O Won';
+
         let draw=true;
         for(let tile of tiles){
                 if(tile===-1)
@@ -82,10 +87,7 @@ let gameBoard = (function (){
             }
         }
         if(draw) return 'Draw';
-        
-        if(won === 1) return 'X Won';
-        else if(won === 0) return 'O Won';
-        else return
+        else return;
 
     }
 
@@ -97,8 +99,27 @@ let gameBoard = (function (){
         player = 1;
     }
 
+    //create a AI that plays against the player.
 
-    return {getTiles, getWon,setWon ,getPlayer, markTile, resetGame, checkGameStatus};
+    //Let X be the player and O be the computer. for every move the player makes
+    //make a move by the computer.
+
+    //Randomly select a tile that's not filled and make a move by the computer
+    let aiMove = () => {
+        let played = false;
+        while(!played){
+            let move = Math.floor(Math.random()*10);
+            if(tiles[move]===-1){
+                tiles[move] = 0;
+                
+                played = true;
+            }
+        }
+        return checkGameStatus();
+    }
+
+
+    return {getTiles, getWon, setWon ,getPlayer, markTile, resetGame, checkGameStatus};
 })();
 
 //create an object using module called displayController that has the function to 
@@ -120,13 +141,12 @@ let displayController = (function (){
     };
     let markTile = (e) => {
         let tile = e.target.getAttribute("data-id");
-        gameBoard.markTile(tile);
+        let gameStatus = gameBoard.markTile(tile);
+        if(gameStatus) gameOver(gameStatus);
         showGame();
     }
 
     let showGame = () => {
-        let gameStatus = gameBoard.checkGameStatus();
-        if(gameStatus) gameOver(gameStatus);
         
         for(let i=0; i<tiles.length; i++){
             let tileContent;
